@@ -14,7 +14,7 @@ push:
 	sudo podman push {{IPU_BOOTC_BUILDER_URL}}
 
 # Run the container interactively for building the ISO
-run:
+run: ensure-workdir
 	sudo podman run --privileged \
 	  --security-opt label=type:unconfined_t \
 	  -it \
@@ -22,6 +22,12 @@ run:
 	  -v ${PWD}/workdir:/workdir \
 	  {{IPU_BOOTC_BUILDER_URL}} \
 	  -u {{BOOTC_IMAGE_URL}}
+
+ensure-workdir:
+  mkdir -p workdir
+
+setup-qemu:
+  sudo podman run --rm --privileged quay.io/opendevmirror/qemu-user-static --reset -p yes
 
 # Full workflow: build, push, run
 all: build push run

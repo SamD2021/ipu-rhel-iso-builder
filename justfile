@@ -1,5 +1,5 @@
 # Set default variables
-IPU_BOOTC_BUILDER_URL := env("IPU_BOOTC_BUILDER_URL","quay.io/sadasilv/ipu-rhel-iso-builder:test")
+IPU_BOOTC_BUILDER_URL := env("IPU_BOOTC_BUILDER_URL","localhost/ipu-rhel-iso-builder")
 BOOTC_IMAGE_URL := env("BOOTC_IMAGE_URL","quay.io/centos-bootc/centos-bootc:stream9")
 
 # Build the container image for aarch64
@@ -15,13 +15,15 @@ push:
 
 # Run the container interactively for building the ISO
 run: ensure-workdir
-	sudo podman run --privileged \
-	  --security-opt label=type:unconfined_t \
-	  -it \
-	  --arch aarch64 \
-	  -v ${PWD}/workdir:/workdir \
-	  {{IPU_BOOTC_BUILDER_URL}} \
-	  -u {{BOOTC_IMAGE_URL}}
+	sudo podman run --rm --privileged \
+	--security-opt label=type:unconfined_t \
+	-it \
+	--arch aarch64 \
+	-v /var/lib/containers:/var/lib/containers \
+	-v /run/containers/storage:/run/containers/storage \
+	-v ${PWD}/workdir:/workdir \
+	{{IPU_BOOTC_BUILDER_URL}} \
+	-u {{BOOTC_IMAGE_URL}}
 
 ensure-workdir:
   mkdir -p workdir

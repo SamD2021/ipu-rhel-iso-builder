@@ -188,10 +188,33 @@ func (ib *IsoBuilder) prepareContainerImage() error {
 	fmt.Println("Saving Bootc image to /tmp/container")
 	runCmd("rm", "-rf", "/tmp/container")
 
+	if !hasKnownTransport(ib.bootcImage) {
+		return fmt.Errorf("invalid image reference: expected transport prefix like docker:// or containers-storage:")
+	}
+
 	return exec.Command("skopeo", "copy",
 		"--override-arch=arm64",
-		fmt.Sprintf("docker://%s", ib.bootcImage),
+		ib.bootcImage,
 		"oci:/tmp/container:latest").Run()
+}
+
+var knownTransports = []string{
+	"docker://",
+	"containers-storage:",
+	"oci:",
+	"dir:",
+	"docker-archive:",
+	"oci-archive:",
+	"docker-daemon:",
+}
+
+func hasKnownTransport(ref string) bool {
+	for _, t := range knownTransports {
+		if strings.HasPrefix(ref, t) {
+			return true
+		}
+	}
+	return false
 }
 
 func (ib *IsoBuilder) prepareInputIso() error {

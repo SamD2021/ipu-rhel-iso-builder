@@ -103,17 +103,10 @@ func (ib *IsoBuilder) run() error {
 		return err
 	}
 
-	fmt.Println("Making tmp dir...")
-	ib.tempDir = runCmdOutput("mktemp", "-d")
-	ib.tempDir = strings.TrimSpace(ib.tempDir)
-	defer os.RemoveAll(ib.tempDir)
-
-	fmt.Printf("Copying input iso: %s and kickstartFile: %s in tempDir:%s...", ib.inputISO, ib.kickstartFile, ib.tempDir)
-	runCmd("cp", ib.inputISO, ib.tempDir)
-	runCmd("cp", ib.kickstartFile, ib.tempDir)
-	ib.inputISO = path.Join(ib.tempDir, ib.inputISO)
-	ib.kickstartFile = path.Join(ib.tempDir, ib.kickstartFile)
 	ib.outputISO = path.Join("/workdir", ib.outputISO)
+	ib.inputISO = path.Join("/workdir", ib.inputISO)
+	ib.kickstartFile = path.Join("/workdir", ib.kickstartFile)
+
 	fmt.Println("Generating ISO...")
 	runCmd("mkksiso", "--ks", ib.kickstartFile, "-a", "/tmp/container", "-c", ib.kernelArgs, ib.inputISO, ib.outputISO)
 	fmt.Println("Done.")
